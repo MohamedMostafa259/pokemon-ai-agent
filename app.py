@@ -48,7 +48,7 @@ def main_app():
         font=[gr.themes.GoogleFont("Inter"), "ui-sans-serif", "system-ui", "sans-serif"]
     )
     
-    with gr.Blocks(title="Pokémon AI Agents", theme=elite_theme, css=custom_css) as demo:
+    with gr.Blocks(title="Pokémon AI Agents") as demo:
         
         gr.HTML(
             """
