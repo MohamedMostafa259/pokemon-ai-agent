@@ -29,4 +29,5 @@ nginx -c /app/nginx.conf
 echo "Starting AI Agent Gradio App..."
 cd /app
 export GRADIO_SERVER_PORT=7861
+export PYTHONUNBUFFERED=1
 python app.py
