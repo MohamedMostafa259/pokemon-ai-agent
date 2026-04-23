@@ -29,12 +29,13 @@ WORKDIR /app/server
 RUN npm install
 RUN cp config/config-example.js config/config.js
 
-# Install dependencies for Showdown Client
+# Install and BUILD Showdown Client (must compile to generate js/battle.js etc.)
 WORKDIR /app
 RUN if [ ! -d "client/config" ]; then git clone https://github.com/smogon/pokemon-showdown-client.git client; fi
 WORKDIR /app/client
 RUN npm install || true
 RUN cp config/config-example.js config/config.js
+RUN node build
 
 # Set permissions
 WORKDIR /app
