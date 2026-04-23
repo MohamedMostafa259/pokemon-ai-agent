@@ -39,7 +39,11 @@ RUN node build
 
 # Set permissions
 WORKDIR /app
-RUN chmod -R 755 /app
+RUN chmod -R 755 /app \
+    # HF Spaces runs as non-root (uid 1000). start.sh writes to these at runtime,
+    # so they need world-writable permissions.
+    && chmod -R 777 /app/client/config \
+    && chmod 777 /app/client/play.pokemonshowdown.com/testclient.html
 RUN chmod +x start.sh
 
 # Expose the single port Hugging Face Spaces uses

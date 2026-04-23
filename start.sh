@@ -13,11 +13,11 @@ Config.server = {
     altport: 80
 };
 EOF
+echo "Config write status: $?"
 
 # Redirect testclient.html to load our local config at an absolute path.
-# '../config/config.js' would resolve to /config/config.js (no nginx route).
-# '/client/config/config.js' resolves correctly via the nginx alias.
 sed -i 's|https://play.pokemonshowdown.com/config/config.js|/client/config/config.js|g' /app/client/play.pokemonshowdown.com/testclient.html
+echo "Testclient patch status: $?"
 
 echo "Starting Pokemon Showdown Server..."
 cd /app/server
