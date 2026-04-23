@@ -1,4 +1,0 @@
-gradio==6.13.0
-poke-env
-litellm
-json-repair

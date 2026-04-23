@@ -7,6 +7,9 @@ from battle_runners import (
     start_bot_vs_bot_thread,
     start_ladder_thread
 )
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(threadName)s - %(levelname)s - %(message)s')

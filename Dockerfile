@@ -11,9 +11,9 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy python dependencies and install
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy python project config and install dependencies dynamically
+COPY pyproject.toml ./
+RUN pip install --no-cache-dir $(python3 -c "import tomllib; print(' '.join(tomllib.load(open('pyproject.toml', 'rb'))['project']['dependencies']))")
 
 # Copy source code
 COPY . /app
