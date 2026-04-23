@@ -1,22 +1,23 @@
 #!/bin/bash
 
-# Update client config to use relative path/hostname for websocket
-echo "Configuring Pokemon Showdown Client..."
+# Write browser-compatible config for the Showdown client.
+# play.pokemonshowdown.com/config/config.js is a symlink to ../../config/config.js,
+# so writing here is what gets served at /client/config/config.js via nginx.
 cat << 'EOF' > /app/client/config/config.js
-exports.server = {
+var Config = Config || {};
+Config.server = {
     id: 'localhost',
     host: window.location.hostname,
-    port: window.location.port ? window.location.port : (window.location.protocol === 'https:' ? 443 : 80),
-    httpport: window.location.port ? window.location.port : (window.location.protocol === 'https:' ? 443 : 80),
-    altport: 80,
-    routes: {
-        client: '/client/'
-    }
+    port: window.location.port ? parseInt(window.location.port) : (window.location.protocol === 'https:' ? 443 : 80),
+    httpport: window.location.port ? parseInt(window.location.port) : (window.location.protocol === 'https:' ? 443 : 80),
+    altport: 80
 };
 EOF
 
-# Point testclient.html to use the local config instead of the public one
-sed -i 's|https://play.pokemonshowdown.com/config/config.js|../config/config.js|g' /app/client/play.pokemonshowdown.com/testclient.html
+# Redirect testclient.html to load our local config at an absolute path.
+# '../config/config.js' would resolve to /config/config.js (no nginx route).
+# '/client/config/config.js' resolves correctly via the nginx alias.
+sed -i 's|https://play.pokemonshowdown.com/config/config.js|/client/config/config.js|g' /app/client/play.pokemonshowdown.com/testclient.html
 
 echo "Starting Pokemon Showdown Server..."
 cd /app/server
