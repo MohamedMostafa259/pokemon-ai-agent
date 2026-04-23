@@ -99,11 +99,11 @@ def main_app():
                     <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 60px 40px; text-align: center; background-color: #f8fafc; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 500px;">
                         <h2 style="margin-bottom: 10px; color: #0f172a; font-family: Inter, sans-serif; font-weight: 700; font-size: 1.8em;">Battles run on the local server.</h2>
                         <p style="margin-bottom: 30px; font-size: 1.1em; color: #475569; max-width: 500px; line-height: 1.6;">
-                            Your Docker space is hosting a local Pokemon Showdown server and client.<br><br>
-                            Click below to open the client in a new tab. Once your AI matches start, you can find them in your active battles or by searching for your bot's username!
+                            Your Docker container is running a local Pokemon Showdown server.<br><br>
+                            Click below to open the Showdown client. Once your AI matches start, you can spectate them by searching for your bot's username!
                         </p>
-                        <a href="/client/" target="_blank" style="background-color: #3b82f6; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.1em; box-shadow: 0 2px 4px rgb(59 130 246 / 0.4);">
-                            🟢 Open Local Pokémon Showdown (New Tab)
+                        <a href="http://localhost:8000" target="_blank" style="background-color: #3b82f6; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.1em; box-shadow: 0 2px 4px rgb(59 130 246 / 0.4);">
+                            🟢 Open Pokémon Showdown Client
                         </a>
                     </div>
                     """
@@ -113,4 +113,4 @@ def main_app():
 
 if __name__ == "__main__":
     app = main_app()
-    app.launch(server_name="0.0.0.0", server_port=7861)
+    app.launch(server_name="0.0.0.0", server_port=7860)
