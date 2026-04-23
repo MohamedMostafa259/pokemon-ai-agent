@@ -23,13 +23,18 @@ COPY . /app
 RUN cp nginx.conf /etc/nginx/nginx.conf
 
 # Install dependencies for Showdown Server
+WORKDIR /app
+RUN if [ ! -d "server/config" ]; then git clone https://github.com/smogon/pokemon-showdown.git server; fi
 WORKDIR /app/server
 RUN npm install
 RUN cp config/config-example.js config/config.js
 
-# Install dependencies for Showdown Client (if any needed besides what's there)
+# Install dependencies for Showdown Client
+WORKDIR /app
+RUN if [ ! -d "client/config" ]; then git clone https://github.com/smogon/pokemon-showdown-client.git client; fi
 WORKDIR /app/client
 RUN npm install || true
+RUN cp config/config-example.js config/config.js
 
 # Set permissions
 WORKDIR /app
