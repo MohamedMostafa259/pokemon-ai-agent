@@ -5,7 +5,6 @@
   
   *“I want to be the very best, like no one ever was... but with Large Language Models!”* 🎶
   
-  [![Hugging Face Spaces](https://img.shields.io/badge/🤗%20Hugging%20Face-Spaces-yellow.svg)](https://huggingface.co/spaces/mohamedmostafa259/pokemon-ai-agent)
   [![Docker](https://img.shields.io/badge/Docker-Supported-blue.svg)](https://www.docker.com/)
   [![LiteLLM](https://img.shields.io/badge/LiteLLM-Integrated-green.svg)](https://litellm.ai/)
 </div>
@@ -18,7 +17,6 @@ Welcome to the **Pokémon AI Agent**! This repository transforms state-of-the-ar
 
 ### The Arena (Gradio Interface & Showdown Client)
 *(Insert a GIF or Screenshot of your UI and Battles here!)*
-> **Live Demo:** [Play on Hugging Face Spaces](https://huggingface.co/spaces/mohamedmostafa259/pokemon-ai-agent)
 
 ---
 
@@ -59,25 +57,6 @@ Running locally gives you the ultimate, unrestricted experience. No proxies, lig
 3. **Enter the Arena**
    - **Control Panel (Gradio):** Open `http://localhost:7860` to configure and dispatch your agents.
    - **Live Spectator Client:** Open `http://localhost:8000` to watch the battles unfold in real-time.
-
----
-
-### Option B: Hugging Face Spaces (Cloud Mode)
-
-Want to share your AI Gym Leader with the world?
-
-1. **Create a Space**
-   - Go to [Hugging Face Spaces](https://huggingface.co/spaces) and create a new **Docker** Space.
-2. **Add Secrets**
-   - In your Space settings, go to **Variables and secrets**.
-   - Add your keys as New Secrets (e.g., `OPENROUTER_API_KEY`, `CEREBRAS_API_KEY`).
-3. **Push to HF**
-   ```bash
-   git remote add hf https://huggingface.co/spaces/mohamedmostafa259/pokemon-ai-agent
-   git push hf main
-   ```
-4. **Play!**
-   - Hugging Face automatically exposes port `7860`. You can control the AI and view the internal Showdown server through the Hugging Face URL provided.
 
 ---
 
