@@ -38,6 +38,7 @@ RUN cp config/config-example.js config/config.js
 
 # Set permissions
 WORKDIR /app
+RUN chmod -R 755 /app
 RUN chmod +x start.sh
 
 # Expose the single port Hugging Face Spaces uses

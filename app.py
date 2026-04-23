@@ -64,40 +64,33 @@ def main_app():
                 
                 with gr.Tab("Player Match") as tab_player:
                     with gr.Group():
-                        gr.Markdown("Challenge an AI agent to a battle on Showdown.\n\n⚠️ *Requires a registered Showdown bot account.*")
                         agent_drop = gr.Dropdown(choices=AGENT_OPTIONS, label="AI Agent", value="Cerebras Llama 3.1 8B")
                         opp_user = gr.Textbox(label="Your Showdown Username", placeholder="e.g., player123")
                         bot_user = gr.Textbox(label="Bot Username", placeholder="Registered Bot Username")
-                        bot_pass = gr.Textbox(label="Bot Password", type="password", info="Leave blank for Localhost")
                         challenge_btn = gr.Button("Send Challenge", variant="primary")
                     status_out = gr.Textbox(label="Status", interactive=False, lines=2)
-                    challenge_btn.click(fn=start_invite_thread, inputs=[agent_drop, opp_user, bot_user, bot_pass], outputs=status_out)
+                    challenge_btn.click(fn=lambda a, o, b: start_invite_thread(a, o, b, ""), inputs=[agent_drop, opp_user, bot_user], outputs=status_out)
                     
                 with gr.Tab("AI vs AI") as tab_arena:
                     with gr.Group():
-                        gr.Markdown("Watch two different LLMs battle each other on Showdown.\n\n⚠️ *Requires two registered accounts.*")
                         with gr.Row():
                             with gr.Column():
                                 a1_drop = gr.Dropdown(choices=AGENT_OPTIONS, label="Model 1", value="Cerebras Llama 3.1 8B")
                                 b1_user = gr.Textbox(label="Bot 1 Username", placeholder="Bot 1 Username")
-                                b1_pass = gr.Textbox(label="Bot 1 Password", type="password")
                             with gr.Column():
                                 a2_drop = gr.Dropdown(choices=AGENT_OPTIONS, label="Model 2", value="Google Gemma 4 31B")
                                 b2_user = gr.Textbox(label="Bot 2 Username", placeholder="Bot 2 Username")
-                                b2_pass = gr.Textbox(label="Bot 2 Password", type="password", info="Optional locally")
                         arena_btn = gr.Button("Start AI vs AI Battle", variant="primary")
                     arena_status = gr.Textbox(label="Status", interactive=False, lines=2)
-                    arena_btn.click(fn=start_bot_vs_bot_thread, inputs=[a1_drop, b1_user, b1_pass, a2_drop, b2_user, b2_pass], outputs=arena_status)
+                    arena_btn.click(fn=lambda a1, b1, a2, b2: start_bot_vs_bot_thread(a1, b1, "", a2, b2, ""), inputs=[a1_drop, b1_user, a2_drop, b2_user], outputs=arena_status)
 
                 with gr.Tab("Auto-Ladder") as tab_ladder:
                     with gr.Group():
-                        gr.Markdown("Allow an AI agent to play ranked matches on your Showdown account.\n\n⚠️ *Wait for login before switching tabs!*")
                         ladder_drop = gr.Dropdown(choices=AGENT_OPTIONS, label="AI Agent", value="Cerebras Llama 3.1 8B")
                         lad_user = gr.Textbox(label="Showdown Username", placeholder="Your Registered Username")
-                        lad_pass = gr.Textbox(label="Showdown Password", type="password", info="Optional locally")
                         ladder_btn = gr.Button("Start Auto-Laddering", variant="primary")
                     ladder_status = gr.Textbox(label="Status", interactive=False, lines=2)
-                    ladder_btn.click(fn=start_ladder_thread, inputs=[ladder_drop, lad_user, lad_pass], outputs=ladder_status)
+                    ladder_btn.click(fn=lambda a, l: start_ladder_thread(a, l, ""), inputs=[ladder_drop, lad_user], outputs=ladder_status)
 
             with gr.Column(scale=2, min_width=600):
                 gr.Markdown("### 📺 Live Showdown Client")
