@@ -15,6 +15,9 @@ exports.server = {
 };
 EOF
 
+# Point testclient.html to use the local config instead of the public one
+sed -i 's|https://play.pokemonshowdown.com/config/config.js|../config/config.js|g' /app/client/play.pokemonshowdown.com/testclient.html
+
 echo "Starting Pokemon Showdown Server..."
 cd /app/server
 node pokemon-showdown start --no-security &
