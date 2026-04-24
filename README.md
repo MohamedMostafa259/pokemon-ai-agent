@@ -154,7 +154,7 @@ pokemon-ai-agent/
 
 **How a turn works:**
 1. `poke-env` receives the battle state from the Showdown server.
-2. `agent.py` formats it into a structured prompt (active Pokemon, moves, switches, opponent info, last 8-turns memory).
+2. `agent.py` formats it into a structured prompt (active Pokemon, moves, switches, opponent info, last 20-turns memory).
 3. The prompt is sent to the LLM via `litellm.acompletion()` with tool definitions.
 4. The LLM responds with a tool call (`choose_move` or `choose_switch`).
 5. The agent translates the tool call back into a Showdown protocol command.

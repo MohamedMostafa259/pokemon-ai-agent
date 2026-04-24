@@ -11,18 +11,20 @@ from tools import toolsList
 
 logger = logging.getLogger(__name__)
 
+
 class PokemonAgent(poke_env.player.Player):
     """
     An AI agent for Pokemon Showdown that uses LiteLLM
     to support OpenAI, Anthropic, Gemini, Mistral, and more.
     """
+
     def __init__(self, model_name, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # litellm will automatically pick up API keys from the environment variables
         # (e.g., OPENROUTER_API_KEY, CEREBRAS_API_KEY, GROQ_API_KEY, MISTRAL_API_KEY, GEMINI_API_KEY)
         self.model = model_name
         self.functions = toolsList
-        
+
         # Short-term memory
         self.history = []
 
@@ -30,19 +32,23 @@ class PokemonAgent(poke_env.player.Player):
         """Formats the current battle state into a string for the LLM."""
         # Own active Pokemon details
         active_pkmn = battle.active_pokemon
-        active_pkmn_info = f"Your active Pokemon: {active_pkmn.species} " \
-                           f"(Type: {'/'.join(map(str, active_pkmn.types))}) " \
-                           f"HP: {active_pkmn.current_hp_fraction * 100:.1f}% " \
-                           f"Status: {active_pkmn.status.name if active_pkmn.status else 'None'} " \
-                           f"Boosts: {active_pkmn.boosts}"
+        active_pkmn_info = (
+            f"Your active Pokemon: {active_pkmn.species} "
+            f"(Type: {'/'.join(map(str, active_pkmn.types))}) "
+            f"HP: {active_pkmn.current_hp_fraction * 100:.1f}% "
+            f"Status: {active_pkmn.status.name if active_pkmn.status else 'None'} "
+            f"Boosts: {active_pkmn.boosts}"
+        )
 
         # Opponent active Pokemon details
         opponent_pkmn = battle.opponent_active_pokemon
-        opponent_pkmn_info = f"Opponent's active Pokemon: {opponent_pkmn.species} " \
-                             f"(Type: {'/'.join(map(str, opponent_pkmn.types))}) " \
-                             f"HP: {opponent_pkmn.current_hp_fraction * 100:.1f}% " \
-                             f"Status: {opponent_pkmn.status.name if opponent_pkmn.status else 'None'} " \
-                             f"Boosts: {opponent_pkmn.boosts}"
+        opponent_pkmn_info = (
+            f"Opponent's active Pokemon: {opponent_pkmn.species} "
+            f"(Type: {'/'.join(map(str, opponent_pkmn.types))}) "
+            f"HP: {opponent_pkmn.current_hp_fraction * 100:.1f}% "
+            f"Status: {opponent_pkmn.status.name if opponent_pkmn.status else 'None'} "
+            f"Boosts: {opponent_pkmn.boosts}"
+        )
 
         # Available moves
         available_moves_info = "Available moves:\n"
@@ -50,41 +56,47 @@ class PokemonAgent(poke_env.player.Player):
             for move in battle.available_moves:
                 available_moves_info += f"- {move.id} (Type: {move.type}, BP: {move.base_power}, Acc: {move.accuracy}, PP: {move.current_pp}/{move.max_pp}, Cat: {move.category.name})\n"
         else:
-             available_moves_info += "- None (Must switch or Struggle)\n"
+            available_moves_info += "- None (Must switch or Struggle)\n"
 
         # Available switches
         available_switches_info = "Available switches:\n"
         if battle.available_switches:
             for pkmn in battle.available_switches:
-                 available_switches_info += f"- {pkmn.species} (HP: {pkmn.current_hp_fraction * 100:.1f}%, Status: {pkmn.status.name if pkmn.status else 'None'})\n"
+                available_switches_info += f"- {pkmn.species} (HP: {pkmn.current_hp_fraction * 100:.1f}%, Status: {pkmn.status.name if pkmn.status else 'None'})\n"
         else:
             available_switches_info += "- None\n"
 
         # Combine information
-        state_str = f"{active_pkmn_info}\n" \
-                    f"{opponent_pkmn_info}\n\n" \
-                    f"{available_moves_info}\n" \
-                    f"{available_switches_info}\n" \
-                    f"Weather: {battle.weather}\n" \
-                    f"Terrains: {battle.fields}\n" \
-                    f"Your Side Conditions: {battle.side_conditions}\n" \
-                    f"Opponent Side Conditions: {battle.opponent_side_conditions}\n\n"
-        
+        state_str = (
+            f"{active_pkmn_info}\n"
+            f"{opponent_pkmn_info}\n\n"
+            f"{available_moves_info}\n"
+            f"{available_switches_info}\n"
+            f"Weather: {battle.weather}\n"
+            f"Terrains: {battle.fields}\n"
+            f"Your Side Conditions: {battle.side_conditions}\n"
+            f"Opponent Side Conditions: {battle.opponent_side_conditions}\n\n"
+        )
+
         # PERMANENT REVEALED KNOWLEDGE LEDGER
         revealed_knowledge = "Opponent's Revealed Team & Moves:\n"
         if battle.opponent_team:
             for pkmn_name, pkmn in battle.opponent_team.items():
-                types = '/'.join(map(str, pkmn.types))
-                moves = ', '.join([move for move in pkmn.moves.keys()]) if pkmn.moves else 'None revealed'
-                item = pkmn.item if pkmn.item else 'Unknown'
-                ability = pkmn.ability if pkmn.ability else 'Unknown'
+                types = "/".join(map(str, pkmn.types))
+                moves = (
+                    ", ".join([move for move in pkmn.moves.keys()])
+                    if pkmn.moves
+                    else "None revealed"
+                )
+                item = pkmn.item if pkmn.item else "Unknown"
+                ability = pkmn.ability if pkmn.ability else "Unknown"
                 revealed_knowledge += f"- {pkmn.species} (Type: {types}): Moves: [{moves}], Item: {item}, Ability: {ability}\n"
         else:
-             revealed_knowledge += "- Unknown\n"
-        
+            revealed_knowledge += "- Unknown\n"
+
         state_str += f"{revealed_knowledge}\n"
 
-        # FLOW: 8-TURN MEMORY
+        # FLOW: 20-TURN MEMORY
         if self.history:
             history_str = "Your recent actions (Flow):\n"
             for i, action in enumerate(self.history):
@@ -94,17 +106,19 @@ class PokemonAgent(poke_env.player.Player):
         return state_str.strip()
 
     @observe(as_type="agent", capture_input=False)
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10)
+    )
     async def _get_llm_decision(self, battle_state: str) -> dict | None:
         langfuse_client = get_client()
         langfuse_client.update_current_span(
             name=f"pokemon_agent_{self.username}",
             input=battle_state,
             metadata={
-                "history (last 8 actions)": self.history,
-            }
+                "history (last 20 actions)": self.history,
+            },
         )
-        
+
         """Sends state to LiteLLM router and gets back the function call decision."""
         system_prompt = (
             "You are an elite Pokemon battle AI. Your goal is to win the battle. "
@@ -134,7 +148,7 @@ class PokemonAgent(poke_env.player.Player):
                 input=messages,
                 metadata={
                     "tools": self.functions,
-                }
+                },
             ) as generation_span:
                 response = await litellm.acompletion(
                     model=self.model,
@@ -146,15 +160,20 @@ class PokemonAgent(poke_env.player.Player):
                 generation_span.update(
                     output=message,
                 )
-                if getattr(message, 'tool_calls', None):
+                if getattr(message, "tool_calls", None):
                     function_call = message.tool_calls[0].function
-                    return {"name": function_call.name, "arguments": json_repair.loads(function_call.arguments)}
+                    return {
+                        "name": function_call.name,
+                        "arguments": json_repair.loads(function_call.arguments),
+                    }
                 else:
                     langfuse_client.update_current_span(
                         level="WARNING",
                         status_message="No tool call returned.",
                     )
-                    logger.warning("No tool call returned. Response: %s", message.content)
+                    logger.warning(
+                        "No tool call returned. Response: %s", message.content
+                    )
                     return None
         except Exception as e:
             logger.error("Error during LiteLLM API call: %s", e)
@@ -166,20 +185,24 @@ class PokemonAgent(poke_env.player.Player):
         finally:
             langfuse_client.flush()
 
-    def _find_move_by_name(self, battle: poke_env.battle.Battle, move_name: str) -> poke_env.battle.Move | None:
+    def _find_move_by_name(
+        self, battle: poke_env.battle.Battle, move_name: str
+    ) -> poke_env.battle.Move | None:
         """Finds the Move object corresponding to the given name."""
         # Normalize name for comparison (lowercase, remove spaces/hyphens)
         normalized_name = move_name.lower().replace(" ", "").replace("-", "")
         for move in battle.available_moves:
-            if move.id == normalized_name: # move.id is already normalized
+            if move.id == normalized_name:  # move.id is already normalized
                 return move
         # Fallback: try matching against the display name if ID fails (less reliable)
         for move in battle.available_moves:
-             if move.id == move_name.lower(): # Handle cases like "U-turn" vs "uturn"
-                 return move
+            if move.id == move_name.lower():  # Handle cases like "U-turn" vs "uturn"
+                return move
         return None
 
-    def _find_pokemon_by_name(self, battle: poke_env.battle.Battle, pokemon_name: str) -> poke_env.battle.Pokemon | None:
+    def _find_pokemon_by_name(
+        self, battle: poke_env.battle.Battle, pokemon_name: str
+    ) -> poke_env.battle.Pokemon | None:
         """Finds the Pokemon object corresponding to the given species name."""
         # Normalize name for comparison
         normalized_name = pokemon_name.lower()
@@ -210,38 +233,48 @@ class PokemonAgent(poke_env.player.Player):
                     if chosen_move:
                         # Add to short-term memory
                         self.history.append(f"Used move: {chosen_move.id}")
-                        if len(self.history) > 8:
+                        if len(self.history) > 20:
                             self.history.pop(0)
-                            
+
                         return self.create_order(chosen_move)
                     else:
-                        logger.warning("LLM chose unavailable/invalid move '%s'. Falling back.", move_name)
+                        logger.warning(
+                            "LLM chose unavailable/invalid move '%s'. Falling back.",
+                            move_name,
+                        )
                 else:
-                    logger.warning("LLM 'choose_move' called without 'move_name'. Falling back.")
+                    logger.warning(
+                        "LLM 'choose_move' called without 'move_name'. Falling back."
+                    )
 
             elif function_name == "choose_switch":
                 pokemon_name = args.get("pokemon_name")
                 if pokemon_name:
                     chosen_switch = self._find_pokemon_by_name(battle, pokemon_name)
-                    if chosen_switch:                        
+                    if chosen_switch:
                         # Add to short-term memory
                         self.history.append(f"Switched to: {chosen_switch.species}")
-                        if len(self.history) > 8:
+                        if len(self.history) > 20:
                             self.history.pop(0)
-                        
+
                         return self.create_order(chosen_switch)
                     else:
-                        logger.warning("LLM chose unavailable/invalid switch '%s'. Falling back.", pokemon_name)
+                        logger.warning(
+                            "LLM chose unavailable/invalid switch '%s'. Falling back.",
+                            pokemon_name,
+                        )
                 else:
-                    logger.warning("LLM 'choose_switch' called without 'pokemon_name'. Falling back.")
+                    logger.warning(
+                        "LLM 'choose_switch' called without 'pokemon_name'. Falling back."
+                    )
 
         # 4. Fallback if API fails, returns invalid action, or no function call
         logger.info("Fallback: Choosing random move/switch.")
         # Ensure options exist before choosing randomly
         available_options = battle.available_moves + battle.available_switches
         if available_options:
-             # Use the built-in random choice method from Player for fallback
-             return self.choose_random_move(battle)
+            # Use the built-in random choice method from Player for fallback
+            return self.choose_random_move(battle)
         else:
-             # Should only happen if forced to Struggle
-             return self.choose_default_move(battle)
+            # Should only happen if forced to Struggle
+            return self.choose_default_move(battle)
