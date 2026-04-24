@@ -5,3 +5,8 @@ __pycache__/
 node_modules/
 server/
 client/
+.gradio/
+*.egg-info/
+
+# personal
+misc/
