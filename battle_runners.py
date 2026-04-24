@@ -44,7 +44,12 @@ MODEL_MAP = {
     "Groq Compound": "groq/groq/compound",
 
     # Mistral
-    "Mistral Codestral 2508": "mistral/codestral-2508"
+    "Mistral Codestral 2508": "mistral/codestral-2508",
+
+    # HuggingFace
+    "HuggingFace SynLogic-Mix-3-32B": "huggingface/MiniMaxAI/SynLogic-Mix-3-32B:featherless-ai",
+    "HuggingFace Vera-Instruct": "huggingface/Dorian2B/Vera-Instruct:featherless-ai",
+    "HuggingFace Qwen2.5-72B-Instruct": "huggingface/Qwen/Qwen2.5-72B-Instruct:novita",
 }
 AGENT_OPTIONS = ["Random Baseline Bot (Random moves (no LLM))"] + list(MODEL_MAP.keys())
 
