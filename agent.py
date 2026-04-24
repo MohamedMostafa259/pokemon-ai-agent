@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class PokemonAgent(poke_env.player.Player):
     """
-    An AI agent for Pokemon Showdown that uses LiteLLM
+    An AI agent for Pokémon Showdown that uses LiteLLM
     to support OpenAI, Anthropic, Gemini, Mistral, and more.
     """
 
@@ -30,20 +30,20 @@ class PokemonAgent(poke_env.player.Player):
 
     def _format_battle_state(self, battle: poke_env.battle.Battle) -> str:
         """Formats the current battle state into a string for the LLM."""
-        # Own active Pokemon details
+        # Own active Pokémon details
         active_pkmn = battle.active_pokemon
         active_pkmn_info = (
-            f"Your active Pokemon: {active_pkmn.species} "
+            f"Your active Pokémon: {active_pkmn.species} "
             f"(Type: {'/'.join(map(str, active_pkmn.types))}) "
             f"HP: {active_pkmn.current_hp_fraction * 100:.1f}% "
             f"Status: {active_pkmn.status.name if active_pkmn.status else 'None'} "
             f"Boosts: {active_pkmn.boosts}"
         )
 
-        # Opponent active Pokemon details
+        # Opponent active Pokémon details
         opponent_pkmn = battle.opponent_active_pokemon
         opponent_pkmn_info = (
-            f"Opponent's active Pokemon: {opponent_pkmn.species} "
+            f"Opponent's active Pokémon: {opponent_pkmn.species} "
             f"(Type: {'/'.join(map(str, opponent_pkmn.types))}) "
             f"HP: {opponent_pkmn.current_hp_fraction * 100:.1f}% "
             f"Status: {opponent_pkmn.status.name if opponent_pkmn.status else 'None'} "
@@ -121,7 +121,7 @@ class PokemonAgent(poke_env.player.Player):
 
         """Sends state to LiteLLM router and gets back the function call decision."""
         system_prompt = (
-            "You are an elite Pokemon battle AI. Your goal is to win the battle. "
+            "You are an elite Pokémon battle AI. Your goal is to win the battle. "
             "Based on the current battle state, decide the best action by choosing an available move or switch. "
             "Consider type matchups, HP, status conditions, field effects, entry hazards, and opponent actions.\n\n"
             "CRITICAL RULES:\n"
@@ -203,7 +203,7 @@ class PokemonAgent(poke_env.player.Player):
     def _find_pokemon_by_name(
         self, battle: poke_env.battle.Battle, pokemon_name: str
     ) -> poke_env.battle.Pokemon | None:
-        """Finds the Pokemon object corresponding to the given species name."""
+        """Finds the Pokémon object corresponding to the given species name."""
         # Normalize name for comparison
         normalized_name = pokemon_name.lower()
         for pkmn in battle.available_switches:

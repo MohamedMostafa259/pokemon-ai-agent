@@ -1,26 +1,26 @@
 import gradio as gr
 import logging
 
-from battle_runners import (
-    AGENT_OPTIONS,
-    start_invite_thread,
-    start_bot_vs_bot_thread
-)
+from battle_runners import AGENT_OPTIONS, start_invite_thread, start_bot_vs_bot_thread
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # Configuration
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(threadName)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(threadName)s - %(levelname)s - %(message)s",
+)
 
 # Constants
 DEFAULT_BATTLE_FORMAT = "gen9randombattle"
 
 PIKACHU_GIF = "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWxlZ2J5d3N2Nm9oanRldTA3aGw4NHFrcW53ZGk1bWdzaWtlaGJwZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/xeuSulJ22SiTaZWBoD/giphy.gif"
 
+
 def main_app():
     """Creates and returns the Gradio application interface."""
-    
+
     custom_css = """
     /* ===== Global Styles ===== */
     body, .gradio-container {
@@ -123,7 +123,7 @@ def main_app():
         box-shadow: 0 0 0 3px rgba(255,203,5,0.15) !important;
     }
 
-    /* ===== Pokemon Battle Buttons ===== */
+    /* ===== Pokémon Battle Buttons ===== */
     .gr-button.primary, button.primary {
         background: linear-gradient(180deg, #FF3333 0%, #CC0000 100%) !important;
         color: #fff !important;
@@ -153,13 +153,18 @@ def main_app():
         font-style: italic;
     }
     """
-    
+
     elite_theme = gr.themes.Base(
         primary_hue="red",
         secondary_hue="amber",
         neutral_hue="slate",
-        font=[gr.themes.GoogleFont("Inter"), "ui-sans-serif", "system-ui", "sans-serif"],
-        text_size=gr.themes.sizes.text_lg
+        font=[
+            gr.themes.GoogleFont("Inter"),
+            "ui-sans-serif",
+            "system-ui",
+            "sans-serif",
+        ],
+        text_size=gr.themes.sizes.text_lg,
     ).set(
         body_background_fill="#0f0c29",
         body_background_fill_dark="#0f0c29",
@@ -202,9 +207,8 @@ def main_app():
         shadow_drop="none",
         shadow_drop_lg="none",
     )
-    
-    with gr.Blocks(title="Pokémon AI Agents") as demo:
 
+    with gr.Blocks(title="Pokémon AI Agents") as demo:
         # --- Hero Section ---
         gr.HTML(
             f"""
@@ -233,29 +237,78 @@ def main_app():
         # --- Battle Controls ---
         with gr.Row():
             with gr.Column(scale=1, min_width=500):
-                
                 with gr.Tab("Human vs. AI") as tab_player:
-                    gr.HTML('<div class="tab-explanation">You play against an AI agent. Log in to Showdown, then the bot challenges you.</div>')
+                    gr.HTML(
+                        '<div class="tab-explanation">You play against an AI agent. Log in to Showdown, then the bot challenges you.</div>'
+                    )
                     with gr.Group():
-                        agent_drop = gr.Dropdown(choices=AGENT_OPTIONS, label="AI Agent (LLM)", value="Cerebras Llama 3.1 8B")
-                        opp_user = gr.Textbox(label="Your Showdown Username", placeholder="The username you logged in with on the Showdown client")
-                        bot_user = gr.Textbox(label="Bot Username", placeholder="Any unique name for the AI bot (e.g., pikabot99)")
+                        agent_drop = gr.Dropdown(
+                            choices=AGENT_OPTIONS,
+                            label="AI Agent (LLM)",
+                            value="Cerebras Llama 3.1 8B",
+                        )
+                        opp_user = gr.Textbox(
+                            label="Your Showdown Username",
+                            placeholder="The username you logged in with on the Showdown client",
+                        )
+                        bot_user = gr.Textbox(
+                            label="Bot Username",
+                            placeholder="Any unique name for the AI bot (e.g., pikabot99)",
+                        )
                         challenge_btn = gr.Button("Send Challenge", variant="primary")
-                    status_out = gr.Textbox(label="Status", interactive=False, lines=2, elem_classes=["status-box"])
-                    challenge_btn.click(fn=lambda a, o, b: start_invite_thread(a, o, b), inputs=[agent_drop, opp_user, bot_user], outputs=status_out)
-                    
+                    status_out = gr.Textbox(
+                        label="Status",
+                        interactive=False,
+                        lines=2,
+                        elem_classes=["status-box"],
+                    )
+                    challenge_btn.click(
+                        fn=lambda a, o, b: start_invite_thread(a, o, b),
+                        inputs=[agent_drop, opp_user, bot_user],
+                        outputs=status_out,
+                    )
+
                 with gr.Tab("AI vs. AI") as tab_arena:
-                    gr.HTML('<div class="tab-explanation">Two AI agents battle each other autonomously. Just pick models and watch.</div>')
+                    gr.HTML(
+                        '<div class="tab-explanation">Two AI agents battle each other autonomously. Just pick models and watch.</div>'
+                    )
                     with gr.Group():
                         with gr.Row():
                             with gr.Column():
-                                a1_drop = gr.Dropdown(choices=AGENT_OPTIONS, label="Model 1", value="Cerebras Llama 3.1 8B")
-                                b1_user = gr.Textbox(label="Bot 1 Username", placeholder="e.g., bot_llama")
+                                a1_drop = gr.Dropdown(
+                                    choices=AGENT_OPTIONS,
+                                    label="Model 1",
+                                    value="Cerebras Llama 3.1 8B",
+                                )
+                                b1_user = gr.Textbox(
+                                    label="Bot 1 Username",
+                                    placeholder="e.g., bot_llama",
+                                )
                             with gr.Column():
-                                a2_drop = gr.Dropdown(choices=AGENT_OPTIONS, label="Model 2", value="Mistral Codestral 2508")
-                                b2_user = gr.Textbox(label="Bot 2 Username", placeholder="e.g., bot_gemma")
-                        arena_btn = gr.Button("Start AI vs. AI Battle", variant="primary")
-                    arena_status = gr.Textbox(label="Status", interactive=False, lines=2, elem_classes=["status-box"])
-                    arena_btn.click(fn=lambda a1, b1, a2, b2: start_bot_vs_bot_thread(a1, b1, a2, b2), inputs=[a1_drop, b1_user, a2_drop, b2_user], outputs=arena_status)
+                                a2_drop = gr.Dropdown(
+                                    choices=AGENT_OPTIONS,
+                                    label="Model 2",
+                                    value="Mistral Codestral 2508",
+                                )
+                                b2_user = gr.Textbox(
+                                    label="Bot 2 Username",
+                                    placeholder="e.g., bot_gemma",
+                                )
+                        arena_btn = gr.Button(
+                            "Start AI vs. AI Battle", variant="primary"
+                        )
+                    arena_status = gr.Textbox(
+                        label="Status",
+                        interactive=False,
+                        lines=2,
+                        elem_classes=["status-box"],
+                    )
+                    arena_btn.click(
+                        fn=lambda a1, b1, a2, b2: start_bot_vs_bot_thread(
+                            a1, b1, a2, b2
+                        ),
+                        inputs=[a1_drop, b1_user, a2_drop, b2_user],
+                        outputs=arena_status,
+                    )
 
     return demo, custom_css, elite_theme

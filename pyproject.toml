@@ -1,7 +1,7 @@
 [project]
 name = "pokemon-agents"
 version = "0.1.0"
-description = "LLM-powered AI agents that play Pokemon Showdown autonomously"
+description = "LLM-powered AI agents that play Pokémon Showdown autonomously"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

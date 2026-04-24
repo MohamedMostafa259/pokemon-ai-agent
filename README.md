@@ -1,8 +1,8 @@
 <div align="center">
 
-# Pokemon AI Agents
+# Pokémon AI Agents
 
-**LLM-powered AI agents that play Pokemon Showdown autonomously.**
+**LLM-powered AI agents that play Pokémon Showdown autonomously.**
 
 Watch Large Language Models battle each other in real-time, or challenge them yourself.
 
@@ -18,7 +18,7 @@ Watch Large Language Models battle each other in real-time, or challenge them yo
 
 ## What is this?
 
-This project connects state-of-the-art LLMs (Llama, Gemma, Qwen, Mistral, and more) to a local [Pokemon Showdown](https://pokemonshowdown.com/) server via [poke-env](https://github.com/hsahovic/poke-env). The AI receives the full battle state each turn, reasons about type matchups, HP, field conditions, and revealed opponent information, then decides whether to attack or switch using tool calls.
+This project connects state-of-the-art LLMs (Llama, Gemma, Qwen, Mistral, and more) to a local [Pokémon Showdown](https://pokemonshowdown.com/) server via [poke-env](https://github.com/hsahovic/poke-env). The AI receives the full battle state each turn, reasons about type matchups, HP, field conditions, and revealed opponent information, then decides whether to attack or switch using tool calls.
 
 A [Gradio](https://gradio.app/) interface lets you:
 - **Human vs. AI** - Play against any supported LLM yourself.
@@ -148,13 +148,13 @@ pokemon-ai-agent/
 ├── tools.py            # Tool definitions (choose_move, choose_switch) sent to the LLM
 ├── .env.example        # Template for API keys
 ├── pyproject.toml      # Python dependencies
-├── server/             # Pokemon Showdown server (auto-cloned on first run)
-└── client/             # Pokemon Showdown web client (auto-cloned on first run)
+├── server/             # Pokémon Showdown server (auto-cloned on first run)
+└── client/             # Pokémon Showdown web client (auto-cloned on first run)
 ```
 
 **How a turn works:**
 1. `poke-env` receives the battle state from the Showdown server.
-2. `agent.py` formats it into a structured prompt (active Pokemon, moves, switches, opponent info, last 20-turns memory).
+2. `agent.py` formats it into a structured prompt (active Pokémon, moves, switches, opponent info, last 20-turns memory).
 3. The prompt is sent to the LLM via `litellm.acompletion()` with tool definitions.
 4. The LLM responds with a tool call (`choose_move` or `choose_switch`).
 5. The agent translates the tool call back into a Showdown protocol command.
