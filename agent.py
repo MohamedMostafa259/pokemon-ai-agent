@@ -1,9 +1,15 @@
+import logging
+
 import json_repair
 import litellm
+from langfuse import observe, get_client
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Import necessary poke-env components for type hinting and functionality
 import poke_env
 from tools import toolsList
+
+logger = logging.getLogger(__name__)
 
 class PokemonAgent(poke_env.player.Player):
     """
@@ -87,34 +93,78 @@ class PokemonAgent(poke_env.player.Player):
 
         return state_str.strip()
 
+    @observe(as_type="agent", capture_input=False)
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def _get_llm_decision(self, battle_state: str) -> dict | None:
+        langfuse_client = get_client()
+        langfuse_client.update_current_span(
+            name=f"pokemon_agent_{self.username}",
+            input=battle_state,
+            metadata={
+                "history (last 8 actions)": self.history,
+            }
+        )
+        
         """Sends state to LiteLLM router and gets back the function call decision."""
         system_prompt = (
             "You are an elite Pokemon battle AI. Your goal is to win the battle. "
             "Based on the current battle state, decide the best action by choosing an available move or switch. "
-            "Consider type matchups, HP, status conditions, field effects, entry hazards, and opponent actions."
+            "Consider type matchups, HP, status conditions, field effects, entry hazards, and opponent actions.\n\n"
+            "CRITICAL RULES:\n"
+            "1. You MUST respond ONLY by calling exactly one of the provided tools: 'choose_move' or 'choose_switch'.\n"
+            "2. NEVER respond with plain text, explanations, or commentary.\n"
+            "3. The move_name or pokemon_name you provide MUST exactly match one of the available options listed in the battle state."
         )
-        user_prompt = f"Current Battle State:\n{battle_state}\n\nChoose the best action."
+        user_prompt = (
+            f"Current Battle State:\n{battle_state}\n\n"
+            "---\n\n"
+            "Choose the best action. You MUST call either 'choose_move' or 'choose_switch'. Do NOT reply with text."
+        )
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
 
         try:
-            response = await litellm.acompletion(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                tools=[{"type": "function", "function": f} for f in self.functions],
-            )
-            message = response.choices[0].message
-            if getattr(message, 'tool_calls', None):
-                function_call = message.tool_calls[0].function
-                return {"name": function_call.name, "arguments": json_repair.loads(function_call.arguments)}
-            else:
-                print(f"Warning: No tool call returned. Response: {message.content}")
-                return None
+            with langfuse_client.start_as_current_observation(
+                as_type="generation",
+                name=self.model.split("/")[-1],
+                model=self.model.split("/")[-1],
+                input=messages,
+                metadata={
+                    "tools": self.functions,
+                }
+            ) as generation_span:
+                response = await litellm.acompletion(
+                    model=self.model,
+                    messages=messages,
+                    tools=[{"type": "function", "function": f} for f in self.functions],
+                    tool_choice="required",
+                )
+                message = response.choices[0].message
+                generation_span.update(
+                    output=message,
+                )
+                if getattr(message, 'tool_calls', None):
+                    function_call = message.tool_calls[0].function
+                    return {"name": function_call.name, "arguments": json_repair.loads(function_call.arguments)}
+                else:
+                    langfuse_client.update_current_span(
+                        level="WARNING",
+                        status_message="No tool call returned.",
+                    )
+                    logger.warning("No tool call returned. Response: %s", message.content)
+                    return None
         except Exception as e:
-            print(f"Error during LiteLLM API call: {e}")
+            logger.error("Error during LiteLLM API call: %s", e)
+            langfuse_client.update_current_span(
+                level="ERROR",
+                status_message=str(e),
+            )
             return None
+        finally:
+            langfuse_client.flush()
 
     def _find_move_by_name(self, battle: poke_env.battle.Battle, move_name: str) -> poke_env.battle.Move | None:
         """Finds the Move object corresponding to the given name."""
@@ -127,8 +177,6 @@ class PokemonAgent(poke_env.player.Player):
         for move in battle.available_moves:
              if move.id == move_name.lower(): # Handle cases like "U-turn" vs "uturn"
                  return move
-             if move.name.lower() == move_name.lower():
-                return move
         return None
 
     def _find_pokemon_by_name(self, battle: poke_env.battle.Battle, pokemon_name: str) -> poke_env.battle.Pokemon | None:
@@ -146,8 +194,6 @@ class PokemonAgent(poke_env.player.Player):
         """
         # 1. Format battle state
         battle_state_str = self._format_battle_state(battle)
-        # print(f"\n--- Turn {battle.turn} ---") # Debugging
-        # print(battle_state_str) # Debugging
 
         # 2. Get decision from LLM
         decision = await self._get_llm_decision(battle_state_str)
@@ -156,7 +202,6 @@ class PokemonAgent(poke_env.player.Player):
         if decision:
             function_name = decision["name"]
             args = decision["arguments"]
-            # print(f"OpenAI Recommended: {function_name} with args {args}") # Debugging
 
             if function_name == "choose_move":
                 move_name = args.get("move_name")
@@ -168,12 +213,11 @@ class PokemonAgent(poke_env.player.Player):
                         if len(self.history) > 8:
                             self.history.pop(0)
                             
-                        # print(f"Action: Using move {chosen_move.id}")
                         return self.create_order(chosen_move)
                     else:
-                        print(f"Warning: LLM chose unavailable/invalid move '{move_name}'. Falling back.")
+                        logger.warning("LLM chose unavailable/invalid move '%s'. Falling back.", move_name)
                 else:
-                    print("Warning: LLM 'choose_move' called without 'move_name'. Falling back.")
+                    logger.warning("LLM 'choose_move' called without 'move_name'. Falling back.")
 
             elif function_name == "choose_switch":
                 pokemon_name = args.get("pokemon_name")
@@ -185,15 +229,14 @@ class PokemonAgent(poke_env.player.Player):
                         if len(self.history) > 8:
                             self.history.pop(0)
                         
-                        # print(f"Action: Switching to {chosen_switch.species}")
                         return self.create_order(chosen_switch)
                     else:
-                        print(f"Warning: LLM chose unavailable/invalid switch '{pokemon_name}'. Falling back.")
+                        logger.warning("LLM chose unavailable/invalid switch '%s'. Falling back.", pokemon_name)
                 else:
-                    print("Warning: LLM 'choose_switch' called without 'pokemon_name'. Falling back.")
+                    logger.warning("LLM 'choose_switch' called without 'pokemon_name'. Falling back.")
 
         # 4. Fallback if API fails, returns invalid action, or no function call
-        print("Fallback: Choosing random move/switch.")
+        logger.info("Fallback: Choosing random move/switch.")
         # Ensure options exist before choosing randomly
         available_options = battle.available_moves + battle.available_switches
         if available_options:
