@@ -252,7 +252,7 @@ def main_app():
                                 a1_drop = gr.Dropdown(choices=AGENT_OPTIONS, label="Model 1", value="Cerebras Llama 3.1 8B")
                                 b1_user = gr.Textbox(label="Bot 1 Username", placeholder="e.g., bot_llama")
                             with gr.Column():
-                                a2_drop = gr.Dropdown(choices=AGENT_OPTIONS, label="Model 2", value="Groq OpenAI GPT-OSS 120B")
+                                a2_drop = gr.Dropdown(choices=AGENT_OPTIONS, label="Model 2", value="Mistral Codestral 2508")
                                 b2_user = gr.Textbox(label="Bot 2 Username", placeholder="e.g., bot_gemma")
                         arena_btn = gr.Button("Start AI vs. AI Battle", variant="primary")
                     arena_status = gr.Textbox(label="Status", interactive=False, lines=2, elem_classes=["status-box"])
