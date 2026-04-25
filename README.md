@@ -12,6 +12,8 @@ Watch Large Language Models battle each other in real-time, or challenge them yo
 
 <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWxlZ2J5d3N2Nm9oanRldTA3aGw4NHFrcW53ZGk1bWdzaWtlaGJwZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/xeuSulJ22SiTaZWBoD/giphy.gif" width="100" alt="Pikachu" />
 
+*🎶 I wanna be the very best ... Like no one ever was 🎶*
+
 </div>
 
 ---
