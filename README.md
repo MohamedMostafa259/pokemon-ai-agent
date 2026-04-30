@@ -14,6 +14,12 @@ Watch Large Language Models battle each other in real-time, or challenge them yo
 
 *🎶 I wanna be the very best ... Like no one ever was 🎶*
 
+<br>
+
+[![Pokémon AI Agent Demo](https://raw.githubusercontent.com/MohamedMostafa259/pokemon-ai-agent/main/pokemon-ai-agent-demo.gif)](https://youtu.be/8ZNadmh-Sy8)
+
+[**▶️ Watch the full video demo with audio on YouTube**](https://youtu.be/8ZNadmh-Sy8)
+
 </div>
 
 ---
